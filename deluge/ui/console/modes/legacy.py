@@ -120,6 +120,9 @@ class Legacy(BaseMode):
         # We clear the input string and send it to the command parser on ENTER
         if c == curses.KEY_ENTER or c == 10:
             if self.input:
+                if self.input.endswith('\\'):
+                    self.input = self.input[:-1]
+                    self.input_cursor -= 1
                 self.add_line(">>> " + self.input)
                 self.do_command(self.input.encode(self.encoding))
                 if len(self.input_history) == INPUT_HISTORY_SIZE:
@@ -590,6 +593,10 @@ class Legacy(BaseMode):
         else:
             empty = False
 
+        #Remove dangling backslashes to avoid breaking shlex
+        if line.endswith("\\"):
+            line = line[:-1]
+
         raw_line = line
         line = line.replace("\\ ", " ")
 
@@ -624,7 +631,6 @@ class Legacy(BaseMode):
                 if torrent_name.startswith(line):
                     text = "{!info!}%s{!input!}%s ({!cyan!}%s{!input!})" % (escaped_name[:l], escaped_name[l:], torrent_id)
                     possible_matches.append(text)
-
         return possible_matches
 
     def get_torrent_name(self, torrent_id):
